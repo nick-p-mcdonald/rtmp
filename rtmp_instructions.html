@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTMP Stream Setup Guide</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h2 { color: #333; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 4px; }
+        code { font-family: "Courier New", Courier, monospace; background: #f4f4f4; padding: 2px 4px; border-radius: 4px; }
+        a { text-decoration: none; color: #1a73e8; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>Comprehensive Guide to RTMP Streaming</h1>
+
+    <h2>Table of Contents</h2>
+    <ul>
+        <li><a href="#windows-setup">Windows Setup</a></li>
+        <li><a href="#linux-setup">Linux Setup</a></li>
+        <li><a href="#router-setup">Router Setup for Remote Access</a></li>
+        <li><a href="#vlc-access">Access RTMP Stream Remotely Using VLC</a></li>
+        <li><a href="#summary">Summary</a></li>
+    </ul>
+
+    <h2 id="windows-setup">Windows Setup</h2>
+    <h3>1. Install Nginx with RTMP Module on Windows</h3>
+    <ol>
+        <li>
+            <strong>Download Nginx with RTMP Module</strong>:
+            <ul>
+                <li>Go to the <a href="https://github.com/microsoft/Broadcast-Development-Kit/blob/main/docs/common/install-and-configure-nginx-with-rtmp-module-on-windows.md">Nginx RTMP Module GitHub page</a> and download the zip file.</li>
+                <li>Extract the contents to a folder, e.g., <code>C:\nginx</code>.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Install Nginx</strong>:
+            <ul>
+                <li>Open a command prompt and navigate to the Nginx folder:
+                    <pre><code>cd C:\nginx</code></pre>
+                </li>
+                <li>Run Nginx:
+                    <pre><code>start nginx</code></pre>
+                </li>
+                <li>Note: You may not see any output in the command prompt when you run Nginx.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>2. Configure Nginx for RTMP</h3>
+    <ol>
+        <li>
+            <strong>Edit the Nginx Configuration File</strong>:
+            <ul>
+                <li>Open <code>nginx.conf</code> located in the <code>conf</code> directory of your Nginx folder.</li>
+                <li>Add the following RTMP configuration:
+                    <pre><code>worker_processes  1;
+
+events {
+    worker_connections  1024;
+}
+
+rtmp {
+    server {
+        listen 1935;
+        chunk_size 4096;
+
+        application live {
+            live on;
+            record off;
+        }
+    }
+}</code></pre>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <strong>Restart Nginx</strong>:
+            <ul>
+                <li>In the command prompt, stop Nginx:
+                    <pre><code>nginx -s stop</code></pre>
+                </li>
+                <li>Start Nginx again:
+                    <pre><code>start nginx</code></pre>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <strong>Verify Nginx is Running</strong>:
+            <ul>
+                <li>Open a web browser and navigate to <code>http://localhost</code>. If Nginx is running, you should see the default Nginx welcome page.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>3. Install FFmpeg on Windows</h3>
+    <ol>
+        <li>
+            <strong>Download FFmpeg</strong>:
+            <ul>
+                <li>Go to the <a href="https://ffmpeg.org/download.html">FFmpeg download page</a> and download the latest release.</li>
+                <li>Extract the contents to a folder, e.g., <code>C:\ffmpeg</code>.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>4. Run the FFmpeg Command</h3>
+    <ol>
+        <li>
+            <strong>Open a New Command Prompt</strong>:
+            <ul>
+                <li>Navigate to the FFmpeg folder:
+                    <pre><code>cd C:\ffmpeg\bin</code></pre>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <strong>Run the FFmpeg Command</strong>:
+            <ul>
+                <li>Replace <code>cam_private_ip</code> with the actual IP address of your camera:
+                    <pre><code>ffmpeg -i rtsp://cam_private_ip:554/video -vf scale=854:480 -vcodec libx264 -acodec aac -f flv rtmp://localhost/live/mystream</code></pre>
+                </li>
+                <li>Note: The <code>mystream</code> part of the URL is arbitrary and can be any word you choose.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Run Nginx and FFmpeg in Separate Command Windows</strong>:
+            <ul>
+                <li>Ensure Nginx is running in one command prompt window and leave it open and undisturbed. Nginx is a web server, so it must stay open to allow the stream to work.</li>
+                <li>Open another command prompt window to run the FFmpeg command. FFmpeg is a video encoder program that processes and converts video streams.</li>
+            </ul>
+        </li>
+    </ol>
+    <h2 id="linux-setup">Linux Setup</h2>
+    <h3>1. Install VirtualBox and Ubuntu (Optional)</h3>
+    <ol>
+        <li><b>Download VirtualBox:</b> Install it from <a href="https://www.virtualbox.org/">VirtualBox</a>.</li>
+        <li><b>Download the Ubuntu ISO:</b> Get the latest version from <a href="https://ubuntu.com/download">Ubuntu’s download page</a>.</li>
+        <li><b>Create a Virtual Machine:</b>
+            <ul>
+                <li>Open VirtualBox and click on "New".</li>
+                <li>Name your VM, select the type (Linux), and version (Ubuntu x64).</li>
+                <li>Allocate a minimum of 2GB RAM.</li>
+                <li>Create a Virtual Hard Disk using VDI format and allocate at least 20GB.</li>
+                <li>Select the Ubuntu ISO you downloaded as the optical disk for the VM.</li>
+            </ul>
+        </li>
+        <li><b>Install Ubuntu:</b> Start the VM and proceed through the installation prompts to set up Ubuntu.</li>
+        <li><b>Log In and update the system:</b>
+            <pre><code>sudo apt update && sudo apt upgrade</code></pre>
+        </li>
+        <li><b>Configure Network Settings for Bridging:</b>
+            <ul>
+                <li>In VirtualBox, go to the settings of your VM.</li>
+                <li>Navigate to the "Network" section.</li>
+                <li>Change "Attached to" to "Bridged Adapter".</li>
+                <li>Select your network adapter from the dropdown menu.</li>
+                <li>Click "OK" to save the settings.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>2. Install and Configure Nginx with RTMP Module</h3>
+    <ol>
+        <li>Install Nginx and dependencies:
+            <pre><code>sudo apt install nginx ffmpeg<br>sudo apt install libnginx-mod-rtmp</code></pre>
+        </li>
+        <li>Configure Nginx:
+            <ul>
+                <li>Edit the Nginx configuration:
+                    <pre><code>sudo nano /etc/nginx/nginx.conf</code></pre>
+                </li>
+                <li>Add RTMP block:
+                    <pre><code>rtmp {<br>    server {<br>        listen 1935;<br>        chunk_size 4096;<br><br>        application live {<br>            live on;<br>            record off;<br>        }<br>    }<br>}</code></pre>
+                </li>
+                <li>Save and close the file.</li>
+                <li>Restart Nginx:
+                    <pre><code>sudo systemctl restart nginx</code></pre>
+                </li>
+                <li>Verify Nginx installation with RTMP:
+                    <pre><code>nginx -V 2>&1 | grep rtmp</code></pre>
+                </li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>3. Set Up FFmpeg</h3>
+    <ol>
+        <li>Stream from RTSP to RTMP:
+            <pre><code>ffmpeg -i rtsp://local_camera_ip:554/video -vcodec libx264 -acodec aac -f flv rtmp://localhost/live/mystream</code></pre>
+        </li>
+        <li>Verify stream with FFprobe:
+            <pre><code>ffprobe rtmp://localhost/live/mystream</code></pre>
+        </li>
+    </ol>
+
+    <h2 id="router-setup">Router Setup for Remote Access</h2>
+    <ol>
+        <li>Configure Port Forwarding:
+            <ul>
+                <li>Log in to your router using <code>http://tplinkwifi.net</code> or your router’s IP.</li>
+                <li>Navigate to <b>NAT Forwarding</b> &gt; <b>Virtual Servers</b>:</li>
+                <li>Click <b>Add</b> and set:
+                    <ul>
+                        <li>Service Port: 1935</li>
+                        <li>Internal IP: Your VM’s local IP or Windows machine IP (e.g., <code>192.168.0.100</code>)</li>
+                        <li>Internal Port: 1935</li>
+                        <li>Protocol: TCP</li>
+                        <li>Status: Enabled</li>
+                    </ul>
+                </li>
+                <li>Save your settings.</li>
+            </ul>
+        </li>
+        <li>Enable Remote Management (if needed):
+            <ul>
+                <li>Navigate to <b>System Tools</b> &gt; <b>Administration</b>:</li>
+                <li>Enable <b>Remote Management</b> and set the <b>Remote Management IP Address</b> to <code>0.0.0.0</code>.</li>
+                <li>Save your settings.</li>
+            </ul>
+        </li>
+        <li>Obtain your public IP:
+            <ul>
+                <li>Use a site like <a href="https://www.whatsmyip.org">WhatIsMyIP</a> to find your server's public IP address.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2 id="vlc-access">Access RTMP Stream Remotely Using VLC</h2>
+    <ol>
+        <li>Open VLC.</li>
+        <li>Navigate to <b>Media</b> &gt; <b>Open Network Stream</b>.</li>
+        <li>Enter the RTMP URL:
+            <pre><code>rtmp://your_public_ip_or_domain/live/mystream</code></pre>
+        </li>
+        <li>Click <b>Play</b> to start streaming.</li>
+    </ol>
+
+    <h2 id="summary">Summary</h2>
+    <p>This detailed guide covers:</p>
+    <ul>
+        <li><b>VirtualBox and Ubuntu Setup</b>: Including creating a VM and installing Ubuntu.</li>
+        <li><b>Nginx Configuration</b>: With RTMP module setup.</li>
+        <li><b>FFmpeg Configuration</b>: For streaming RTSP to RTMP.</li>
+        <li><b>Router Port Forwarding</b>: For remote access.</li>
+        <li><b>VLC Access</b>: To stream RTMP from anywhere.</li>
+    </ul>
+</body>
+</html>
